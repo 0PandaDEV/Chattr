@@ -15,7 +15,9 @@ import org.slf4j.Logger;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,10 +38,13 @@ public class Main {
     @Inject
     private ProxyServer server;
 
+    private final Map<Player, Player> lastMessaged = new HashMap<>();
+
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         logger.info("Chattr plugin is initializing.");
         server.getCommandManager().register("msg", new MsgCommand(), "chat");
+        server.getCommandManager().register("r", new ReplyCommand(), "reply");
     }
 
     public class MsgCommand implements SimpleCommand {
@@ -59,11 +64,17 @@ public class Main {
             String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
             Optional<Player> targetPlayer = server.getPlayer(targetPlayerName);
             if (targetPlayer.isPresent()) {
-                String formattedMsgTo = "<#ff6f00>[MSG TO] <dark_gray>»</dark_gray> <white>" + targetPlayer.get().getUsername() + ":</white> <#ff6f00>" + message;
-                String formattedMsgFrom = "<#ff6f00>[MSG From] <dark_gray>»</dark_gray> <white>" + (source instanceof Player ? ((Player) source).getUsername() : "<bold>Server</bold>") + ":</white> <#ff6f00>" + message;
+                Player target = targetPlayer.get();
+                if (source instanceof Player playerSource) {
+                    lastMessaged.put(target, playerSource); // Update last messaged map
+                    lastMessaged.put(playerSource, target); // Update last messaged map
+                }
+
+                String formattedMsgTo = "<#ff6f00>[MSG To] <dark_gray>»</dark_gray> <white>" + targetPlayer.get().getUsername() + "</white><#ff6f00>: " + message;
+                String formattedMsgFrom = "<#ff6f00>[MSG From] <dark_gray>»</dark_gray> <white>" + (source instanceof Player ? ((Player) source).getUsername() : "<bold>Server</bold>") + "</white><#ff6f00>: " + message;
 
                 source.sendMessage(miniMessage.deserialize(formattedMsgTo));
-                targetPlayer.get().sendMessage(miniMessage.deserialize(formattedMsgFrom));
+                target.sendMessage(miniMessage.deserialize(formattedMsgFrom));
             } else {
                 source.sendMessage(Component.text("Player not found.", NamedTextColor.RED));
             }
@@ -83,6 +94,38 @@ public class Main {
                         .collect(Collectors.toList());
             }
             return List.of();
+        }
+    }
+
+    public class ReplyCommand implements SimpleCommand {
+        private final MiniMessage miniMessage = MiniMessage.miniMessage();
+
+        @Override
+        public void execute(Invocation invocation) {
+            CommandSource source = invocation.source();
+            String[] args = invocation.arguments();
+
+            if (!(source instanceof Player playerSource)) {
+                source.sendMessage(Component.text("Only players can use this command.", NamedTextColor.RED));
+                return;
+            }
+
+            if (args.length < 1) {
+                source.sendMessage(Component.text("Usage: /r <message>", NamedTextColor.RED));
+                return;
+            }
+
+            if (!lastMessaged.containsKey(playerSource)) {
+                source.sendMessage(Component.text("No one to reply to.", NamedTextColor.RED));
+                return;
+            }
+
+            Player target = lastMessaged.get(playerSource);
+            String message = String.join(" ", args);
+            String formattedMsgTo = "<#ff6f00>[MSG To] <dark_gray>»</dark_gray> <white>" + target.getUsername() + "</white><#ff6f00>: " + message;
+            String formattedMsgFrom = "<#ff6f00>[MSG From] <dark_gray>»</dark_gray> <white>" + playerSource.getUsername() + "</white><#ff6f00>: " + message;
+            target.sendMessage(miniMessage.deserialize(formattedMsgFrom));
+            playerSource.sendMessage(miniMessage.deserialize(formattedMsgTo));
         }
     }
 }
