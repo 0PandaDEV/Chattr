@@ -13,12 +13,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.slf4j.Logger;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,6 +44,7 @@ public class Main {
 
     public class MsgCommand implements SimpleCommand {
         private final MiniMessage miniMessage = MiniMessage.miniMessage();
+        private final Random random = new Random();
 
         @Override
         public void execute(Invocation invocation) {
@@ -56,44 +52,79 @@ public class Main {
             String[] args = invocation.arguments();
 
             if (args.length < 2) {
-                source.sendMessage(Component.text("Usage: /msg <player> <message>", NamedTextColor.RED));
+                source.sendMessage(Component.text("Usage: /msg <selector> <message>", NamedTextColor.RED));
                 return;
             }
 
-            String targetPlayerName = args[0];
+            String selector = args[0];
             String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-            Optional<Player> targetPlayer = server.getPlayer(targetPlayerName);
-            if (targetPlayer.isPresent()) {
-                Player target = targetPlayer.get();
+            List<Player> targets = resolveSelector(selector, source);
+
+            if (targets.isEmpty()) {
+                source.sendMessage(Component.text("Player not found.", NamedTextColor.RED));
+                return;
+            }
+
+            for (Player target : targets) {
                 if (source instanceof Player playerSource) {
-                    lastMessaged.put(target, playerSource); // Update last messaged map
-                    lastMessaged.put(playerSource, target); // Update last messaged map
+                    lastMessaged.put(target, playerSource);
+                    lastMessaged.put(playerSource, target);
                 }
 
-                String formattedMsgTo = "<#ff6f00>[MSG To] <dark_gray>»</dark_gray> <white>" + targetPlayer.get().getUsername() + "</white><#ff6f00>: " + message;
-                String formattedMsgFrom = "<#ff6f00>[MSG From] <dark_gray>»</dark_gray> <white>" + (source instanceof Player ? ((Player) source).getUsername() : "<bold>Server</bold>") + "</white><#ff6f00>: " + message;
+                String formattedMsgTo = "<#ff6f00>[MSG To] <dark_gray>•</dark_gray> <white>" + target.getUsername() + "</white> <#ff6f00>" + message;
+                String formattedMsgFrom = "<#ff6f00>[MSG From] <dark_gray>•</dark_gray> <white>" + (source instanceof Player ? ((Player) source).getUsername() : "<bold>Server</bold>") + "</white> <#ff6f00>" + message;
 
                 source.sendMessage(miniMessage.deserialize(formattedMsgTo));
                 target.sendMessage(miniMessage.deserialize(formattedMsgFrom));
-            } else {
-                source.sendMessage(Component.text("Player not found.", NamedTextColor.RED));
             }
         }
 
         @Override
         public List<String> suggest(Invocation invocation) {
             String[] args = invocation.arguments();
+            List<String> suggestions = new ArrayList<>();
 
-            if (args.length == 0 || (args.length == 1 && args[0].isEmpty())) {
-                return server.getAllPlayers().stream()
+            if (args.length == 0 || args.length == 1) {
+                suggestions.add("@a");
+                suggestions.add("@r");
+                suggestions.add("@s");
+                suggestions.add("@p");
+
+                CommandSource finalSource = invocation.source();
+                suggestions.addAll(server.getAllPlayers().stream()
                         .map(Player::getUsername)
-                        .collect(Collectors.toList());
-            } else if (args.length == 1) {
-                return server.getAllPlayers().stream()
-                        .map(Player::getUsername)
+                        .filter(username -> !(finalSource instanceof Player && username.equals(((Player) finalSource).getUsername())))
+                        .toList());
+            }
+            if (args.length == 1 && !args[0].isEmpty()) {
+                String currentInput = args[0].toLowerCase();
+                return suggestions.stream()
+                        .filter(s -> s.toLowerCase().startsWith(currentInput))
                         .collect(Collectors.toList());
             }
-            return List.of();
+            return suggestions;
+        }
+
+        private List<Player> resolveSelector(String selector, CommandSource source) {
+            return switch (selector) {
+                case "@a" -> new ArrayList<>(server.getAllPlayers());
+                case "@r" -> {
+                    List<Player> allPlayers = new ArrayList<>(server.getAllPlayers());
+                    yield allPlayers.isEmpty() ? Collections.emptyList() : List.of(allPlayers.get(random.nextInt(allPlayers.size())));
+                }
+                case "@s" -> source instanceof Player ? List.of((Player) source) : Collections.emptyList();
+                case "@p" -> {
+                    if (source instanceof Player playerSource) {
+                        yield server.getAllPlayers().stream()
+                                .filter(p -> !p.equals(playerSource))
+                                .min(Comparator.comparingDouble(Player::getPing))
+                                .map(Collections::singletonList)
+                                .orElse(Collections.emptyList());
+                    }
+                    yield Collections.emptyList();
+                }
+                default -> server.getPlayer(selector).map(Collections::singletonList).orElse(Collections.emptyList());
+            };
         }
     }
 
@@ -122,8 +153,9 @@ public class Main {
 
             Player target = lastMessaged.get(playerSource);
             String message = String.join(" ", args);
-            String formattedMsgTo = "<#ff6f00>[MSG To] <dark_gray>»</dark_gray> <white>" + target.getUsername() + "</white><#ff6f00>: " + message;
-            String formattedMsgFrom = "<#ff6f00>[MSG From] <dark_gray>»</dark_gray> <white>" + playerSource.getUsername() + "</white><#ff6f00>: " + message;
+            String formattedMsgTo = "<#ff6f00>[MSG To] <dark_gray>•</dark_gray> <white>" + target.getUsername() + "</white> <#ff6f00>" + message;
+            String formattedMsgFrom = "<#ff6f00>[MSG From] <dark_gray>•</dark_gray> <white>" + playerSource.getUsername() + "</white> <#ff6f00>" + message;
+
             target.sendMessage(miniMessage.deserialize(formattedMsgFrom));
             playerSource.sendMessage(miniMessage.deserialize(formattedMsgTo));
         }
