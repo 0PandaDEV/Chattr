@@ -4,6 +4,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -102,10 +103,8 @@ public class Commands {
     }
 
     public static class ReplyCommand implements SimpleCommand {
-        private final ProxyServer server;
+        public ReplyCommand() {
 
-        public ReplyCommand(ProxyServer server) {
-            this.server = server;
         }
 
         @Override
