@@ -70,7 +70,6 @@ public class Commands {
                 suggestions.add("@a");
                 suggestions.add("@r");
                 suggestions.add("@s");
-                suggestions.add("@p");
 
                 CommandSource finalSource = invocation.source();
                 suggestions.addAll(server.getAllPlayers().stream()
@@ -94,7 +93,7 @@ public class Commands {
                     List<Player> allPlayers = new ArrayList<>(server.getAllPlayers());
                     yield List.of(allPlayers.get(random.nextInt(allPlayers.size())));
                 }
-                case "@s", "@p" -> source instanceof Player player ? List.of(player) : List.of();
+                case "@s" -> source instanceof Player player ? List.of(player) : List.of();
                 default -> server.getAllPlayers().stream()
                         .filter(player -> player.getUsername().equalsIgnoreCase(selector))
                         .toList();
