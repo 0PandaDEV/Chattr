@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 @Plugin(id = "chattr",
         name = "Chattr",
         version = "1.0",
-        description = "A simple chat plugin for Velocity proxies",
+        description = "A simple msg plugin for Velocity proxies",
         url = "https://pandadev.net",
         authors = {"PandaDEV"})
 public class Main {

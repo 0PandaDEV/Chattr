@@ -74,7 +74,7 @@ public class Commands {
                 CommandSource finalSource = invocation.source();
                 suggestions.addAll(server.getAllPlayers().stream()
                         .map(Player::getUsername)
-                        .filter(username -> !(finalSource instanceof Player && username.equals(((Player) finalSource).getUsername())))
+//                        .filter(username -> !(finalSource instanceof Player && username.equals(((Player) finalSource).getUsername())))
                         .toList());
             }
             if (args.length == 1 && !args[0].isEmpty()) {
