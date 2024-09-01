@@ -9,13 +9,13 @@
 <img src="https://cdn.modrinth.com/data/cached_images/8248d6cedfa86962dae051591941538546834a05.png" height="50px"/>
 
 
-Vitelist is a simple, but useful Whitelist plugin for Velocity based on UUIDs, so it does not rely on player names.
+Chattr is a simple Velocity plugin that allows you to use /msg across the entire network.
 
 ***
 
 <img src="https://i.imgur.com/0VmJHul.png" height="50px"/>
 
-- Vitelist runs on [Velocity](https://papermc.io/software/velocity).
+- Chattr runs on [Velocity](https://papermc.io/software/velocity).
 
 ***
 
@@ -23,7 +23,7 @@ Vitelist is a simple, but useful Whitelist plugin for Velocity based on UUIDs, s
 
 
 If you have any issues or find a bug, please remember to report it
-here [GitHub](https://github.com/0PandaDEV/Vitelist/issues)
+here [GitHub](https://github.com/0PandaDEV/Chattr/issues)
 
 ***
 
