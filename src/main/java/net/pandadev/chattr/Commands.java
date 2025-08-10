@@ -4,7 +4,6 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -20,9 +19,11 @@ public class Commands {
 
     public static class MsgCommand implements SimpleCommand {
         private final ProxyServer server;
+        private final ConfigManager config;
 
-        public MsgCommand(ProxyServer server) {
+        public MsgCommand(ProxyServer server, ConfigManager config) {
             this.server = server;
+            this.config = config;
         }
 
         @Override
@@ -50,11 +51,15 @@ public class Commands {
                     lastMessaged.put(playerSource, target);
                 }
 
-                String formattedMsgTo = "<#ff6f00>[MSG To] <dark_gray>•</dark_gray> <white>" + target.getUsername()
-                        + "</white> <#ff6f00>" + message;
-                String formattedMsgFrom = "<#ff6f00>[MSG From] <dark_gray>•</dark_gray> <white>"
-                        + (source instanceof Player ? ((Player) source).getUsername() : "<bold>Server</bold>")
-                        + "</white> <#ff6f00>" + message;
+                String formattedMsgTo = config.getMsgToTemplate()
+                        .replace("{receiver}", target.getUsername())
+                        .replace("{message}", message);
+
+                String formattedMsgFrom = config.getMsgFromTemplate()
+                        .replace("{sender}", source instanceof Player
+                                ? ((Player) source).getUsername()
+                                : "<bold>Server</bold>")
+                        .replace("{message}", message);
 
                 source.sendMessage(miniMessage.deserialize(formattedMsgTo));
                 target.sendMessage(miniMessage.deserialize(formattedMsgFrom));
@@ -74,7 +79,6 @@ public class Commands {
                 CommandSource finalSource = invocation.source();
                 suggestions.addAll(server.getAllPlayers().stream()
                         .map(Player::getUsername)
-//                        .filter(username -> !(finalSource instanceof Player && username.equals(((Player) finalSource).getUsername())))
                         .toList());
             }
             if (args.length == 1 && !args[0].isEmpty()) {
@@ -102,8 +106,10 @@ public class Commands {
     }
 
     public static class ReplyCommand implements SimpleCommand {
-        public ReplyCommand() {
+        private final ConfigManager config;
 
+        public ReplyCommand(ConfigManager config) {
+            this.config = config;
         }
 
         @Override
@@ -129,15 +135,48 @@ public class Commands {
             }
 
             String message = String.join(" ", args);
-            String formattedMsgTo = "<#ff6f00>[Reply To] <dark_gray>•</dark_gray> <white>" + target.getUsername()
-                    + "</white> <#ff6f00>" + message;
-            String formattedMsgFrom = "<#ff6f00>[Reply From] <dark_gray>•</dark_gray> <white>"
-                    + playerSource.getUsername() + "</white> <#ff6f00>" + message;
+
+            String formattedMsgTo = config.getReplyToTemplate()
+                    .replace("{receiver}", target.getUsername())
+                    .replace("{message}", message);
+
+            String formattedMsgFrom = config.getReplyFromTemplate()
+                    .replace("{sender}", playerSource.getUsername())
+                    .replace("{message}", message);
 
             playerSource.sendMessage(miniMessage.deserialize(formattedMsgTo));
             target.sendMessage(miniMessage.deserialize(formattedMsgFrom));
+
             lastMessaged.put(target, playerSource);
             lastMessaged.put(playerSource, target);
+        }
+    }
+
+    public static class ReloadCommand implements SimpleCommand {
+        private final ConfigManager config;
+        private final Main plugin;
+
+        public ReloadCommand(Main plugin, ConfigManager config) {
+            this.plugin = plugin;
+            this.config = config;
+        }
+
+        @Override
+        public void execute(Invocation invocation) {
+            CommandSource source = invocation.source();
+
+            if (!source.hasPermission("chattr.reload")) {
+                source.sendMessage(Component.text("You don't have permission to reload the config.", NamedTextColor.RED));
+                return;
+            }
+
+            try {
+                plugin.reloadConfig();
+                source.sendMessage(Component.text("Config reloaded successfully!", NamedTextColor.GREEN));
+            } catch (Exception e) {
+                source.sendMessage(Component.text("Failed to reload config: " + e.getMessage(), NamedTextColor.RED));
+                e.printStackTrace();
+            }
         }
     }
 }

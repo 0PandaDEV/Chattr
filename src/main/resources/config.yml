@@ -1,0 +1,5 @@
+messages:
+  privateMessageTo: "<#ff6f00>[MSG To] <dark_gray>•</dark_gray> <white>{receiver}</white> <#ff6f00>{message}"
+  privateMessageFrom: "<#ff6f00>[MSG From] <dark_gray>•</dark_gray> <white>{sender}</white> <#ff6f00>{message}"
+  replyMessageTo: "<#ff6f00>[Reply To] <dark_gray>•</dark_gray> <white>{receiver}</white> <#ff6f00>{message}"
+  replyMessageFrom: "<#ff6f00>[Reply From] <dark_gray>•</dark_gray> <white>{sender}</white> <#ff6f00>{message}"
