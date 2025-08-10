@@ -31,7 +31,7 @@ public class Main {
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         logger.info("Chattr plugin is initializing.");
-        server.getCommandManager().register("msg", new Commands.MsgCommand(server), "chat");
+        server.getCommandManager().register("msg", new Commands.MsgCommand(server), "chat", "tell", "w");
         server.getCommandManager().register("r", new Commands.ReplyCommand(), "reply");
 
         int pluginId = 21956;
