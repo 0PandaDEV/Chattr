@@ -72,15 +72,19 @@ public class Commands {
             List<String> suggestions = new ArrayList<>();
 
             if (args.length == 0 || args.length == 1) {
-                suggestions.add("@a");
-                suggestions.add("@r");
-                suggestions.add("@s");
-
                 CommandSource finalSource = invocation.source();
+
+                if (finalSource.hasPermission("chattr.msgselector")) {
+                    suggestions.add("@a");
+                    suggestions.add("@r");
+                    suggestions.add("@s");
+                }
+
                 suggestions.addAll(server.getAllPlayers().stream()
                         .map(Player::getUsername)
                         .toList());
             }
+
             if (args.length == 1 && !args[0].isEmpty()) {
                 String currentInput = args[0].toLowerCase();
                 return suggestions.stream()
@@ -91,6 +95,10 @@ public class Commands {
         }
 
         private List<Player> resolveSelector(String selector, CommandSource source) {
+            if (selector.startsWith("@") && !source.hasPermission("chattr.msgselector")) {
+                return List.of();
+            }
+
             return switch (selector) {
                 case "@a" -> new ArrayList<>(server.getAllPlayers());
                 case "@r" -> {

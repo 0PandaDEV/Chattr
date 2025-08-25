@@ -51,7 +51,7 @@ public class Main {
             return;
         }
 
-        server.getCommandManager().register( "msg", new Commands.MsgCommand(server, config),"chat", "tell", "w");
+        server.getCommandManager().register("msg", new Commands.MsgCommand(server, config),"chat", "tell", "w");
         server.getCommandManager().register("r", new Commands.ReplyCommand(config),"reply");
         server.getCommandManager().register("chattrreload", new Commands.ReloadCommand(this, config));
 
