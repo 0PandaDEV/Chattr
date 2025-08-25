@@ -6,14 +6,14 @@
 
     <groupId>net.pandadev</groupId>
     <artifactId>Chattr</artifactId>
-    <version>1.0</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>Chattr</name>
 
     <description>A simple chat plugin for Velocity proxies</description>
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <url>https://pandadev.net</url>
@@ -26,7 +26,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.3.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -39,7 +39,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>3.6.3</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -52,7 +52,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.2.4</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -65,16 +65,17 @@
                     </plugin>
                 </plugins>
                 <resources>
-                  <resource>
-                    <directory>src/main/resources</directory>
-                    <filtering>true</filtering>
-                  </resource>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
                 </resources>
             </build>
         </profile>
     </profiles>
 
     <build>
+        <defaultGoal>clean package</defaultGoal>
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
@@ -85,7 +86,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -107,7 +108,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.9.1</version>
+                <version>3.12.1</version>
                 <dependencies>
                     <dependency>
                         <groupId>net.trajano.wagon</groupId>
@@ -117,19 +118,20 @@
                     <dependency>
                         <groupId>org.apache.maven.doxia</groupId>
                         <artifactId>doxia-module-markdown</artifactId>
-                        <version>1.9.1</version>
+                        <version>1.12.0</version>
                     </dependency>
                 </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <version>3.0.1</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <tagNameFormat>@{project.version}</tagNameFormat>
                     <scmCommentPrefix xml:space="preserve">[RELEASE] </scmCommentPrefix>
-                    <goals>install deploy site-deploy</goals> <!-- install is here to fix javadoc generation in multi-module projects -->
+                    <goals>install deploy site-deploy
+                    </goals> <!-- install is here to fix javadoc generation in multi-module projects -->
                     <releaseProfiles>release</releaseProfiles>
                 </configuration>
             </plugin>
@@ -141,7 +143,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.6.3</version>
             </plugin>
         </plugins>
     </reporting>
@@ -157,7 +159,7 @@
         <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
-            <version>3.3.0-SNAPSHOT</version>
+            <version>3.4.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
